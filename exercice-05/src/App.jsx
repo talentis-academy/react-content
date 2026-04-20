@@ -1,9 +1,9 @@
-import ProfileCard from './components/ProfileCard';
+import UserCard from './components/UserCard';
 
-const profiles = [
-  { name: 'Alice Martin', role: 'Développeuse Frontend', email: 'alice@example.com', online: true },
-  { name: 'Bob Dupont', role: 'Designer UI/UX', email: 'bob@example.com', online: false },
-  { name: 'Carol Leroy', role: 'Tech Lead', email: 'carol@example.com', online: true },
+const users = [
+  { name: 'Alice', city: 'Paris', hobby: 'Développement web' },
+  { name: 'Bob', city: 'Lyon', hobby: 'Design UI' },
+  { name: 'Carol', city: 'Bordeaux', hobby: 'React & TypeScript' },
 ];
 
 export default function App() {
@@ -13,7 +13,7 @@ export default function App() {
       display: 'flex', gap: '16px', alignItems: 'center',
       justifyContent: 'center', flexWrap: 'wrap', padding: '2rem',
     }}>
-      {profiles.map(p => <ProfileCard key={p.email} {...p} />)}
+      {users.map(u => <UserCard key={u.name} {...u} />)}
     </div>
   );
 }
