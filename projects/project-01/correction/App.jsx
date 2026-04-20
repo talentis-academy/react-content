@@ -1,41 +1,59 @@
-import { createBrowserRouter, RouterProvider, redirect } from "react-router-dom";
-import { Provider } from "react-redux";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { store } from "./src/store/store";
-import { authLoader } from "./src/utils/auth";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import MainLayout from "./src/layouts/MainLayout";
 import LoginLayout from "./src/layouts/LoginLayout";
 import HomePage from "./src/pages/HomePage";
 import LoginPage from "./src/pages/LoginPage";
 import FavoritesPage from "./src/pages/FavoritesPage";
 import CarDetailPage from "./src/pages/CarDetailPage";
+import ApiDemoPage from "./src/pages/ApiDemoPage";
 import NotFoundPage from "./src/pages/NotFoundPage";
 import ErrorBoundary from "./src/components/ErrorBoundary";
+import { requireAuth, redirectIfAuthenticated } from "./src/utils/authLoader";
 
-const queryClient = new QueryClient();
-
-const router = createBrowserRouter([
-  { path: "/login", element: <LoginLayout />, children: [{ index: true, element: <LoginPage /> }] },
-  {
-    path: "/",
-    element: <MainLayout />,
-    errorElement: <ErrorBoundary />,
-    loader: authLoader,
-    children: [
-      { index: true, element: <HomePage /> },
-      { path: "favorites", element: <FavoritesPage /> },
-      { path: "car/:id", element: <CarDetailPage /> },
-      { path: "*", element: <NotFoundPage /> },
-    ],
-  },
-]);
+const router = createBrowserRouter(
+  [
+    {
+      path: "/login",
+      element: <LoginLayout />,
+      children: [
+        {
+          index: true,
+          element: <LoginPage />,
+          loader: redirectIfAuthenticated,
+        },
+      ],
+    },
+    {
+      path: "/",
+      element: <MainLayout />,
+      errorElement: <ErrorBoundary />,
+      children: [
+        {
+          index: true,
+          element: <HomePage />,
+        },
+        {
+          path: "favorites",
+          element: <FavoritesPage />,
+          loader: requireAuth,
+        },
+        {
+          path: "car/:id",
+          element: <CarDetailPage />,
+        },
+        {
+          path: "api-demo",
+          element: <ApiDemoPage />,
+        },
+        {
+          path: "*",
+          element: <NotFoundPage />,
+        },
+      ],
+    },
+  ],
+);
 
 export default function App() {
-  return (
-    <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </Provider>
-  );
+  return <RouterProvider router={router} />;
 }

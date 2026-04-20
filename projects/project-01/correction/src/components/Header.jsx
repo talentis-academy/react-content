@@ -1,27 +1,63 @@
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { removeToken } from "../utils/auth";
+import { storage } from "../utils/storage";
 
 export default function Header() {
   const navigate = useNavigate();
-  const favCount = useSelector((s) => s.favorites.items.length);
+  const [user, setUser] = useState(null);
 
-  function handleLogout() {
-    removeToken();
+  useEffect(() => {
+    // Load user from localStorage
+    setUser(storage.getUser());
+
+    // Listen for storage changes
+    const handleStorageChange = () => {
+      setUser(storage.getUser());
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("userUpdated", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("userUpdated", handleStorageChange);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    // Remove token and user from localStorage
+    storage.removeToken();
+    storage.removeUser();
+    setUser(null);
+
     navigate("/login");
-  }
+  };
 
   return (
     <header className="header">
       <div className="header-content">
-        <Link to="/" className="logo">Car Catalog</Link>
+        <Link to="/" className="logo">
+          Car Catalog
+        </Link>
         <nav className="nav">
-          <Link to="/" className="nav-link">Home</Link>
+          <Link to="/" className="nav-link">
+            Home
+          </Link>
           <Link to="/favorites" className="nav-link">
-            Favorites {favCount > 0 && <span style={{ background: "var(--accent)", color: "#fff", borderRadius: "50%", padding: "1px 7px", fontSize: "0.75rem", marginLeft: "4px" }}>{favCount}</span>}
+            Favorites
+          </Link>
+          <Link to="/api-demo" className="nav-link">
+            API Demo
           </Link>
         </nav>
-        <button onClick={handleLogout} className="logout-btn">Logout</button>
+        <div className="user-section">
+          <span className="username">{user?.userName || "Guest"}</span>
+          {user && (
+            <button className="logout-btn" onClick={handleLogout}>
+              Logout
+            </button>
+          )}
+        </div>
       </div>
     </header>
   );
