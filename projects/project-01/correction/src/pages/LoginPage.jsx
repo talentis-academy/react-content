@@ -12,19 +12,17 @@ export default function LoginPage() {
     mutationFn: ({ userName, password }) =>
       login(userName, password, true, false, 0),
     onSuccess: (response) => {
-      // Store session token in localStorage
-      if (response.session) {
-        storage.setToken(response.session);
-      }
+      const token = response?.session || response?.Session || response?.token || response?.Token || "auth-session";
+      storage.setToken(token);
 
-      // Store userDetails in localStorage
-      if (response.userDetails) {
+      if (response?.userDetails) {
         storage.setUser(response.userDetails);
-        // Dispatch event to update Header
+        window.dispatchEvent(new CustomEvent("userUpdated"));
+      } else if (response?.userName) {
+        storage.setUser({ userName: response.userName });
         window.dispatchEvent(new CustomEvent("userUpdated"));
       }
 
-      // Navigate to home page on success
       navigate("/");
     },
     onError: (error) => {
