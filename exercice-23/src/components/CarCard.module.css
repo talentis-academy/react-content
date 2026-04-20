@@ -1,0 +1,35 @@
+.card {
+  width: 320px;
+  background-color: #1c2333;
+  border-radius: 14px;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+.title { margin: 0 0 10px; font-size: 1.2rem; font-weight: 700; color: #ffffff; }
+
+.colorRow { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; color: #8b949e; font-size: 0.9rem; }
+
+.colorDot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+.badge { display: inline-block; padding: 3px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; margin-bottom: 16px; border: 1px solid transparent; }
+
+.badgeAvailable { background-color: #e6ffed; color: #2da44e; border-color: #a7f3d0; }
+
+.badgeSold { background-color: #fef2f2; color: #ef4444; border-color: #fecaca; }
+
+.price { margin: 0 0 16px; font-size: 1.6rem; font-weight: 700; color: #ffffff; }
+
+.button {
+  width: 100%; padding: 12px; background-color: #4f7eff; color: #ffffff;
+  border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; transition: background-color 0.15s ease; box-sizing: border-box;
+}
+.button:hover { background-color: #3d6ee8; }
+.button:active { background-color: #2d5ed0; }
