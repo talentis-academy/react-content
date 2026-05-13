@@ -1,38 +1,26 @@
-import { useTheme, ThemeProvider } from './components/ThemeContext';
-import Navbar from './components/Navbar';
-import Card from './components/Card';
-
-const cards = [
-  { title: 'Getting Started', text: 'Learn the basics of React Context API for global state management.' },
-  { title: 'Dark Mode', text: 'Toggle between light and dark themes using a shared context.' },
-  { title: 'useContext', text: 'Any component in the tree can access and update the theme.' },
-];
-
-function Content() {
-  const { theme } = useTheme();
-  return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: theme === 'dark' ? '#0f172a' : '#f8fafc',
-      transition: 'background-color 0.2s',
-    }}>
-      <Navbar />
-      <main style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 24px' }}>
-        <h1 style={{ color: theme === 'dark' ? '#f1f5f9' : '#1e293b', marginBottom: '24px' }}>
-          Context API — Theme Toggle
-        </h1>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {cards.map(c => <Card key={c.title} {...c} />)}
-        </div>
-      </main>
-    </div>
-  );
-}
+import { useState } from 'react';
+import { cars } from './data/cars';
+import CarCard from './components/CarCard';
+import CarDetail from './components/CarDetail';
 
 export default function App() {
+  const [selectedId, setSelectedId] = useState(null);
+  const selectedCar = cars.find(c => c.id === selectedId);
+
   return (
-    <ThemeProvider>
-      <Content />
-    </ThemeProvider>
+    <div style={{
+      minHeight: '100vh', backgroundColor: '#0d1117',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem',
+    }}>
+      {selectedCar ? (
+        <CarDetail car={selectedCar} onBack={() => setSelectedId(null)} />
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}>
+          {cars.map(car => (
+            <CarCard key={car.id} car={car} onViewDetails={setSelectedId} />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

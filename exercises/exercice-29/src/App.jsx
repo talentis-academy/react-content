@@ -1,37 +1,30 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import OpenAI from 'openai';
-import ChatMessage from './components/ChatMessage';
+import GeneratorForm from './components/GeneratorForm';
 
 export default function App() {
   const [apiKey, setApiKey] = useState('');
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
+  const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
-  const bottomRef = useRef(null);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  async function sendMessage(e) {
-    e.preventDefault();
-    if (!input.trim() || !apiKey || loading) return;
-
-    const userMessage = { role: 'user', content: input.trim() };
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
-    setInput('');
+  async function handleGenerate({ topic, type, tone, length }) {
+    if (!apiKey) { setError('Please enter your OpenAI API key.'); return; }
     setLoading(true);
-
+    setError('');
+    setResult('');
     try {
       const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
+      const prompt = `Write a ${tone.toLowerCase()} ${type.toLowerCase()} about "${topic}". 
+Keep it approximately ${length} words. Be direct and engaging.`;
       const res = await client.chat.completions.create({
         model: 'gpt-3.5-turbo',
-        messages: newMessages,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 600,
       });
-      setMessages(prev => [...prev, res.choices[0].message]);
+      setResult(res.choices[0].message.content);
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }]);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -39,65 +32,54 @@ export default function App() {
 
   return (
     <div style={{
-      minHeight: '100vh', backgroundColor: '#0f172a', display: 'flex',
-      alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'sans-serif',
+      minHeight: '100vh', backgroundColor: '#0f172a', fontFamily: 'sans-serif',
+      padding: '40px 20px', color: '#f1f5f9',
     }}>
-      <div style={{
-        width: '100%', maxWidth: '640px', backgroundColor: '#1e293b',
-        borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '80vh',
-      }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid #334155' }}>
-          <h1 style={{ margin: 0, color: '#f1f5f9', fontSize: '1.1rem', fontWeight: '700' }}>Chat GPT</h1>
+      <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+        <h1 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '4px' }}>✨ Content Generator</h1>
+        <p style={{ color: '#64748b', marginBottom: '32px' }}>Powered by OpenAI GPT-3.5</p>
+
+        <div style={{ marginBottom: '24px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.85rem', fontWeight: '600' }}>
+            OpenAI API Key
+          </label>
           <input
             type="password"
-            placeholder="Paste your OpenAI API key..."
+            placeholder="sk-..."
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
             style={{
-              marginTop: '8px', width: '100%', padding: '8px 12px', borderRadius: '8px',
-              border: '1px solid #475569', backgroundColor: '#0f172a', color: '#94a3b8',
-              fontSize: '0.8rem', boxSizing: 'border-box',
+              width: '100%', padding: '10px 14px', borderRadius: '8px',
+              border: '1px solid #334155', backgroundColor: '#1e293b', color: '#f1f5f9',
+              fontSize: '0.9rem', boxSizing: 'border-box',
             }}
           />
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-          {messages.length === 0 && (
-            <p style={{ color: '#475569', textAlign: 'center', marginTop: '40px' }}>
-              Enter your API key above and start chatting!
-            </p>
-          )}
-          {messages.map((msg, i) => <ChatMessage key={i} {...msg} />)}
-          {loading && (
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '12px' }}>
-              <div style={{ padding: '10px 14px', backgroundColor: '#f1f5f9', borderRadius: '18px 18px 18px 4px', color: '#64748b', fontSize: '0.85rem' }}>
-                Thinking...
-              </div>
+        <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '24px', marginBottom: '24px' }}>
+          <GeneratorForm onGenerate={handleGenerate} loading={loading} />
+        </div>
+
+        {error && (
+          <div style={{ backgroundColor: '#3a1a1a', border: '1px solid #f85149', borderRadius: '10px', padding: '14px', color: '#f85149', marginBottom: '16px' }}>
+            {error}
+          </div>
+        )}
+
+        {result && (
+          <div style={{ backgroundColor: '#1e293b', borderRadius: '16px', padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '600' }}>Generated Content</h3>
+              <button
+                onClick={() => navigator.clipboard.writeText(result)}
+                style={{ padding: '6px 14px', backgroundColor: '#334155', color: '#94a3b8', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem' }}
+              >
+                Copy
+              </button>
             </div>
-          )}
-          <div ref={bottomRef} />
-        </div>
-
-        <form onSubmit={sendMessage} style={{ padding: '16px 20px', borderTop: '1px solid #334155', display: 'flex', gap: '10px' }}>
-          <input
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            placeholder="Type a message..."
-            disabled={loading || !apiKey}
-            style={{
-              flex: 1, padding: '10px 14px', borderRadius: '10px',
-              border: '1px solid #475569', backgroundColor: '#0f172a', color: '#f1f5f9',
-              fontSize: '0.9rem',
-            }}
-          />
-          <button type="submit" disabled={loading || !input.trim() || !apiKey} style={{
-            padding: '10px 20px', backgroundColor: '#4f7eff', color: '#fff',
-            border: 'none', borderRadius: '10px', fontWeight: '600', cursor: 'pointer',
-            opacity: (!input.trim() || !apiKey) ? 0.5 : 1,
-          }}>
-            Send
-          </button>
-        </form>
+            <p style={{ margin: 0, color: '#cbd5e1', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>{result}</p>
+          </div>
+        )}
       </div>
     </div>
   );
